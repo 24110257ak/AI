@@ -1,11 +1,12 @@
 """
 8-Puzzle Solver  ·  v2  ·  Cyberpunk / Sci-Fi theme
 ────────────────────────────────────────────────────
-Tính năng mới so với v1:
+Tính năng:
+  • Thuật toán BFS — đảm bảo tìm lời giải ngắn nhất
+  • Shuffle từ GOAL theo nước hợp lệ — luôn giải được
   • Theme Cyberpunk (nền tối, neon cyan/pink, viền lưới)
   • Hiệu ứng trượt mượt (sliding animation) khi ô di chuyển
-  • Thanh tốc độ (Speed Slider) điều chỉnh ANIM_DELAY
-  • Chọn thuật toán: BFS / DFS / A* (Manhattan)
+  • Thanh tốc độ (Speed Slider) điều chỉnh tốc độ play
   • Chấm trạng thái (status dot): Idle / Computing / Done / Error
   • Neo-Brutalism shadow cho các ô số
   • Hiệu ứng nhấp nháy neon khi Solve xong
@@ -43,22 +44,15 @@ def swap(s, i, j):
     lst = list(s); lst[i], lst[j] = lst[j], lst[i]
     return tuple(lst)
 
-def is_solvable(s):
-    t = [x for x in s if x != 0]
-    inv = sum(1 for i in range(len(t)) for j in range(i+1,len(t)) if t[i]>t[j])
-    return inv % 2 == 0
-
-def shuffle_puzzle():
-    s = list(GOAL)
-    for _ in range(400):
-        b = s.index(0)
-        m = random.choice(get_moves(tuple(s)))
-        s[b], s[m] = s[m], s[b]
-    s = tuple(s)
-    if not is_solvable(s):
-        i, j = s.index(1), s.index(2)
-        lst = list(s); lst[i], lst[j] = lst[j], lst[i]
-        s = tuple(lst)
+def shuffle_puzzle(steps=120):
+    s = GOAL
+    prev = None
+    for _ in range(steps):
+        moves = [m for m in get_moves(s) if m != prev]
+        b = find_blank(s)
+        m = random.choice(moves)
+        prev = b
+        s = swap(s, b, m)
     return s
 
 # ── BFS ─────────────────────────────────────────────────────────────
